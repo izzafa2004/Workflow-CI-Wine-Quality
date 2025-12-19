@@ -1,0 +1,103 @@
+name: MLflow Model Training CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v3
+      
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+        
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mlflow==2.19.0 scikit-learn==1.6.1 pandas==2.2.2 numpy==2.0.2 matplotlib==3.9.0 seaborn==0.13.2
+        
+    - name: 🔍 Verify Files
+      run: |
+        echo "Checking MLProject structure..."
+        ls -la MLProject/
+        ls -la MLProject/dataset_preprocessing/
+        
+    - name: 🚀 Run MLflow Project
+      working-directory: ./MLProject
+      run: |
+        echo "Starting MLflow training..."
+        mlflow run . \
+          --env-manager=local \
+          -P n_estimators=200 \
+          -P max_depth=15 \
+          -P min_samples_split=5 \
+          -P min_samples_leaf=2 \
+          -P class_weight=balanced
+        
+    - name: 📊 Collect Artifacts
+      if: always()
+      run: |
+        echo "Collecting training artifacts..."
+        mkdir -p ci_artifacts
+        
+        # Find and copy artifacts from mlruns
+        if [ -d "MLProject/mlruns" ]; then
+          echo "MLruns directory found"
+          find MLProject/mlruns -name "*.png" -exec cp {} ci_artifacts/ \;
+          find MLProject/mlruns -name "*.json" -exec cp {} ci_artifacts/ \;
+          find MLProject/mlruns -name "*.csv" -exec cp {} ci_artifacts/ \;
+          find MLProject/mlruns -name "*.pkl" -exec cp {} ci_artifacts/ \; 2>/dev/null || true
+        fi
+        
+        # Also check artifacts directory if exists
+        if [ -d "MLProject/artifacts" ]; then
+          echo "Artifacts directory found"
+          cp -r MLProject/artifacts/* ci_artifacts/ 2>/dev/null || true
+        fi
+        
+        # List collected artifacts
+        echo "Collected artifacts:"
+        ls -lh ci_artifacts/
+        
+    - name: 📤 Upload Artifacts to GitHub
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-artifacts-${{ github.run_number }}
+        path: ci_artifacts/
+        retention-days: 30
+        
+    - name: 📝 Create Training Report
+      if: always()
+      run: |
+        echo "# MLflow Training Report" > training_report.md
+        echo "" >> training_report.md
+        echo "**Run Number:** ${{ github.run_number }}" >> training_report.md
+        echo "**Date:** $(date)" >> training_report.md
+        echo "**Branch:** ${{ github.ref_name }}" >> training_report.md
+        echo "**Commit:** ${{ github.sha }}" >> training_report.md
+        echo "" >> training_report.md
+        echo "## Artifacts Generated" >> training_report.md
+        echo "" >> training_report.md
+        ls -lh ci_artifacts/ >> training_report.md
+        
+    - name: 📋 Display Report
+      if: always()
+      run: cat training_report.md
+      
+    - name: ✅ Training Status
+      run: |
+        echo "========================================="
+        echo "✅ MLflow Training Completed Successfully!"
+        echo "========================================="
+        echo "Artifacts have been saved to GitHub Actions"
+        echo "You can download them from the Actions tab"
