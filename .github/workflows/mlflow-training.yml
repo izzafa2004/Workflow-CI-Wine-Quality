@@ -7,11 +7,6 @@ on:
     branches: [ main ]
   workflow_dispatch:  # Allow manual trigger
 
-# Definisikan environment variables untuk secrets
-env:
-  MLFLOW_TRACKING_URI: http://localhost:5000
-  GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-
 jobs:
   train-model:
     runs-on: ubuntu-latest
@@ -177,17 +172,6 @@ jobs:
         files: |
           ci_artifacts/*
     
-    # ========== ✅ SKILLED CRITERIA: GOOGLE DRIVE UPLOAD (OPTIONAL) ==========
-    - name: ☁️ Upload to Google Drive (Optional)
-      if: env.GOOGLE_DRIVE_FOLDER_ID != '' && github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: samoht/upload-google-drive@v1
-      env:
-        GOOGLE_DRIVE_CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}  # ← MENGGUNAKAN SECRET
-      with:
-        folder_id: ${{ env.GOOGLE_DRIVE_FOLDER_ID }}
-        source: ci_artifacts/
-        target: wine-model-run-${{ github.run_number }}
-    
     - name: 📝 Create Training Report
       if: always()
       run: |
@@ -210,9 +194,6 @@ jobs:
         if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
           echo "✅ GitHub Release: mlflow-model-v1.0.${{ github.run_number }}" >> training_report.md
         fi
-        if [ -n "${{ env.GOOGLE_DRIVE_FOLDER_ID }}" ]; then
-          echo "✅ Google Drive: wine-model-run-${{ github.run_number }}" >> training_report.md
-        fi
         
     - name: 📋 Display Report
       if: always()
@@ -227,15 +208,9 @@ jobs:
         echo "  ✓ Workflow CI running"
         echo "  ✓ Artifacts saved to GitHub Actions"
         echo "  ✓ GitHub Releases created"
-        echo "  ✓ Using GitHub Secrets"
-        if [ -n "${{ env.GOOGLE_DRIVE_FOLDER_ID }}" ]; then
-          echo "  ✓ Google Drive upload (if configured)"
-        fi
+        echo "  ✓ Using GitHub Secrets (GITHUB_TOKEN)"
         echo ""
         echo "📥 Download artifacts from:"
         echo "  1. GitHub Actions → Artifacts"
         echo "  2. GitHub → Releases"
-        if [ -n "${{ env.GOOGLE_DRIVE_FOLDER_ID }}" ]; then
-          echo "  3. Google Drive (configured folder)"
-        fi
         echo "========================================="
