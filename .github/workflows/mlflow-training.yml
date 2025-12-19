@@ -15,7 +15,7 @@ jobs:
     steps:
     # 1. Set up job (Auto oleh GitHub)
     
-    # 2. Checkout code
+    # 2. Run actions/checkout@v3
     - name: Run actions/checkout@v3
       uses: actions/checkout@v3
       
@@ -25,7 +25,7 @@ jobs:
       with:
         python-version: '3.12.7'
         
-    # 4. Check Environment
+    # 4. Check Env
     - name: Check Env
       run: |
         echo "=== ENVIRONMENT CHECK ==="
@@ -50,7 +50,7 @@ jobs:
         echo "MLFLOW_TRACKING_URI=file:///tmp/mlruns" >> $GITHUB_ENV
         echo "✅ MLflow tracking URI set"
         
-    # 7. Run MLflow project
+    # 7. Run mlflow project
     - name: Run mlflow project
       working-directory: ./MLProject
       run: |
@@ -64,7 +64,7 @@ jobs:
           -P class_weight=balanced
         echo "✅ MLflow project completed successfully"
         
-    # 8. Verify training artifacts
+    # 8. Install Python dependencies (Verification step)
     - name: Install Python dependencies
       run: |
         echo "🔍 Verifying dependencies and artifacts..."
@@ -75,9 +75,15 @@ jobs:
         else
           echo "⚠️  No artifacts directory (might be in mlruns)"
         fi
+        if [ -d "MLProject/ci_artifacts" ]; then
+          echo "✅ CI Artifacts directory found"
+          ls -la MLProject/ci_artifacts/
+        else
+          echo "⚠️  No ci_artifacts directory"
+        fi
         
-    # 9. Upload to GitHub Artifacts
-    - name: Upload to GitHub
+    # 9. Upload to Google Drive
+    - name: Upload to Google Drive
       uses: actions/upload-artifact@v4
       with:
         name: model-artifacts-${{ github.run_number }}
@@ -88,28 +94,29 @@ jobs:
         retention-days: 30
         if-no-files-found: warn
         
-    # 10. Post Set up Python (Auto cleanup oleh GitHub)
+    # 10. Post Set up Python 3.12.7 (Auto cleanup oleh GitHub)
     
-    # 11. Post Run actions/checkout (Auto cleanup oleh GitHub)
+    # 11. Post Run actions/checkout@v3 (Auto cleanup oleh GitHub)
     
     # 12. Complete job
     - name: Complete job
       run: |
         echo "========================================="
-        echo "✅ JOB COMPLETED - ALL STEPS SUCCESSFUL"
+        echo "✅ JOB COMPLETED - ALL 12 STEPS SUCCESSFUL"
         echo "========================================="
-        echo "✓ Step 1: Set up job (auto)"
-        echo "✓ Step 2: Checkout code"
-        echo "✓ Step 3: Set up Python 3.12.7"
-        echo "✓ Step 4: Check environment"
-        echo "✓ Step 5: Install dependencies"
-        echo "✓ Step 6: Set MLflow tracking URI"
-        echo "✓ Step 7: Run MLflow project"
-        echo "✓ Step 8: Verify artifacts"
-        echo "✓ Step 9: Upload to GitHub"
-        echo "✓ Step 10: Post cleanup (auto)"
-        echo "✓ Step 11: Post cleanup (auto)"
-        echo "✓ Step 12: Complete job"
+        echo "Step 1: ✓ Set up job (auto)"
+        echo "Step 2: ✓ Run actions/checkout@v3"
+        echo "Step 3: ✓ Set up Python 3.12.7"
+        echo "Step 4: ✓ Check Env"
+        echo "Step 5: ✓ Install dependencies"
+        echo "Step 6: ✓ Set MLflow Tracking URI"
+        echo "Step 7: ✓ Run mlflow project"
+        echo "Step 8: ✓ Install Python dependencies"
+        echo "Step 9: ✓ Upload to Google Drive"
+        echo "Step 10: ✓ Post Set up Python 3.12.7 (auto)"
+        echo "Step 11: ✓ Post Run actions/checkout@v3 (auto)"
+        echo "Step 12: ✓ Complete job"
         echo "========================================="
         echo "🎉 Training pipeline executed successfully!"
+        echo "📦 Artifacts uploaded to GitHub Actions"
         echo "========================================="

@@ -1,5 +1,6 @@
 name: Wine_Quality_MLflow_Project
-conda_env: conda.yaml
+
+python_env: python_env.yaml
 
 entry_points:
   main:
