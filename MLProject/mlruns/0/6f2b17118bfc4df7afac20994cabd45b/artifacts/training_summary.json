@@ -1,0 +1,47 @@
+{
+  "run_id": "6f2b17118bfc4df7afac20994cabd45b",
+  "training_date": "2025-12-19 19:21:23",
+  "model_type": "RandomForestClassifier",
+  "hyperparameters": {
+    "n_estimators": 200,
+    "max_depth": 15,
+    "min_samples_split": 5,
+    "min_samples_leaf": 2,
+    "class_weight": "balanced"
+  },
+  "dataset_info": {
+    "train_samples": 3724,
+    "val_samples": 532,
+    "test_samples": 1064,
+    "n_features": 8
+  },
+  "test_metrics": {
+    "accuracy": 0.8270676691729323,
+    "precision": 0.5489130434782609,
+    "recall": 0.5,
+    "f1_score": 0.5233160621761658,
+    "roc_auc": 0.841940226505249
+  },
+  "top_features": [
+    {
+      "feature": "alcohol",
+      "importance": 0.2479599130480139
+    },
+    {
+      "feature": "density",
+      "importance": 0.1728692912812661
+    },
+    {
+      "feature": "total sulfur dioxide",
+      "importance": 0.12381623996883155
+    },
+    {
+      "feature": "volatile acidity",
+      "importance": 0.12194049618453215
+    },
+    {
+      "feature": "chlorides",
+      "importance": 0.11676175700981471
+    }
+  ]
+}

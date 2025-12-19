@@ -1,0 +1,17 @@
+============================================================
+GITHUB ACTIONS WORKFLOW - TRAINING SUCCESS
+============================================================
+
+Workflow completed successfully at: 2025-12-19 19:21:36
+MLflow Run ID: 6f2b17118bfc4df7afac20994cabd45b
+Test F1-Score: 0.5233
+Test Accuracy: 0.8271
+Test ROC-AUC: 0.8419
+Artifacts generated: 5 files
+
+Files available for download:
+  - confusion_matrix.png
+  - feature_importance.png
+  - feature_importance.csv
+  - training_summary.json
+  - classification_report.json

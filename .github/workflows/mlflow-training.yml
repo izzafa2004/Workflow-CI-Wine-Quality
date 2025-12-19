@@ -13,113 +13,103 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    # 1. Set up job (auto by GitHub)
+    # 1. Set up job (Auto oleh GitHub)
     
-    # 2. Run actions/checkout@v3
+    # 2. Checkout code
     - name: Run actions/checkout@v3
       uses: actions/checkout@v3
       
-    # 3. Set up Python 3.12.7
+    # 3. Set up Python 3.12.7  
     - name: Set up Python 3.12.7
       uses: actions/setup-python@v4
       with:
         python-version: '3.12.7'
         
-    # 4. Check Env
+    # 4. Check Environment
     - name: Check Env
       run: |
         echo "=== ENVIRONMENT CHECK ==="
-        echo "Python: $(python --version)"
-        echo "Pip: $(pip --version)"
         echo "Working directory: $(pwd)"
+        echo "Python version: $(python --version)"
         echo "MLProject exists: $(ls -d MLProject 2>/dev/null && echo 'YES' || echo 'NO')"
+        echo "MLProject contents:"
+        ls -la MLProject/ || echo "MLProject directory not found"
         
     # 5. Install dependencies
     - name: Install dependencies
       run: |
-        pip install mlflow==2.19.0 scikit-learn==1.3.2 pandas==2.2.2 numpy==1.26.4 matplotlib==3.8.4 seaborn==0.13.2
+        echo "📦 Installing Python dependencies..."
+        pip install --upgrade pip
+        pip install mlflow==2.19.0 scikit-learn pandas numpy matplotlib seaborn imbalanced-learn
+        echo "✅ Dependencies installed successfully"
         
     # 6. Set MLflow Tracking URI
     - name: Set MLflow Tracking URI
       run: |
+        echo "📊 Setting MLflow tracking to local..."
         echo "MLFLOW_TRACKING_URI=file:///tmp/mlruns" >> $GITHUB_ENV
-        echo "✅ MLflow tracking URI set to local"
+        echo "✅ MLflow tracking URI set"
         
-    # 7. Run mlflow project
+    # 7. Run MLflow project
     - name: Run mlflow project
       working-directory: ./MLProject
       run: |
         echo "🚀 Starting MLflow project..."
         mlflow run . \
+          --env-manager local \
           -P n_estimators=200 \
           -P max_depth=15 \
           -P min_samples_split=5 \
           -P min_samples_leaf=2 \
           -P class_weight=balanced
-        echo "✅ MLflow project completed"
+        echo "✅ MLflow project completed successfully"
         
-    # 8. Install Python dependencies (extra step jika perlu)
+    # 8. Verify training artifacts
     - name: Install Python dependencies
       run: |
-        echo "📦 Installing any additional Python dependencies..."
-        # This step can be empty or install extra packages
-        pip list | grep -E "(mlflow|scikit|pandas|numpy|matplotlib|seaborn)"
+        echo "🔍 Verifying dependencies and artifacts..."
+        python -c "import mlflow, sklearn, pandas, numpy, matplotlib, seaborn; print('✅ All dependencies verified')"
+        if [ -d "MLProject/artifacts" ]; then
+          echo "✅ Artifacts directory found"
+          ls -la MLProject/artifacts/
+        else
+          echo "⚠️  No artifacts directory (might be in mlruns)"
+        fi
         
-    # 9. Upload to GitHub (REPLACES "Upload to Google Drive")
+    # 9. Upload to GitHub Artifacts
     - name: Upload to GitHub
       uses: actions/upload-artifact@v4
       with:
-        name: wine-model-artifacts-${{ github.run_number }}
+        name: model-artifacts-${{ github.run_number }}
         path: |
           MLProject/artifacts/
           MLProject/ci_artifacts/
+          /tmp/mlruns/
         retention-days: 30
+        if-no-files-found: warn
         
-    # 10. Create GitHub Release (additional storage method)
-    - name: Create GitHub Release
-      if: github.event_name == 'push'
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: wine-model-v1.0.${{ github.run_number }}
-        name: "Wine Quality Model v1.0.${{ github.run_number }}"
-        body: |
-          # Automated MLflow Training
-          
-          This release contains model artifacts from automated CI/CD training.
-          
-          **Run Details:**
-          - Run Number: ${{ github.run_number }}
-          - Commit: ${{ github.sha }}
-          - Date: $(date -u)
-          
-          **Artifacts included:**
-          - Model files
-          - Training metrics
-          - Visualizations
-        files: |
-          MLProject/artifacts/*
-          MLProject/ci_artifacts/*
+    # 10. Post Set up Python (Auto cleanup oleh GitHub)
     
-    # 11. & 12. Post steps akan otomatis oleh GitHub
+    # 11. Post Run actions/checkout (Auto cleanup oleh GitHub)
     
+    # 12. Complete job
     - name: Complete job
       run: |
-        echo "========================================"
-        echo "✅ JOB COMPLETED SUCCESSFULLY!"
-        echo "========================================"
-        echo "All 12 steps executed:"
-        echo "1. Set up job ✓"
-        echo "2. Run actions/checkout@v3 ✓"
-        echo "3. Set up Python 3.12.7 ✓"
-        echo "4. Check Env ✓"
-        echo "5. Install dependencies ✓"
-        echo "6. Set MLflow Tracking URI ✓"
-        echo "7. Run mlflow project ✓"
-        echo "8. Install Python dependencies ✓"
-        echo "9. Upload to GitHub ✓"
-        echo "10. Post Set up Python 3.12.7 (auto) ✓"
-        echo "11. Post Run actions/checkout@v3 (auto) ✓"
-        echo "12. Complete job ✓"
-        echo "========================================"
+        echo "========================================="
+        echo "✅ JOB COMPLETED - ALL STEPS SUCCESSFUL"
+        echo "========================================="
+        echo "✓ Step 1: Set up job (auto)"
+        echo "✓ Step 2: Checkout code"
+        echo "✓ Step 3: Set up Python 3.12.7"
+        echo "✓ Step 4: Check environment"
+        echo "✓ Step 5: Install dependencies"
+        echo "✓ Step 6: Set MLflow tracking URI"
+        echo "✓ Step 7: Run MLflow project"
+        echo "✓ Step 8: Verify artifacts"
+        echo "✓ Step 9: Upload to GitHub"
+        echo "✓ Step 10: Post cleanup (auto)"
+        echo "✓ Step 11: Post cleanup (auto)"
+        echo "✓ Step 12: Complete job"
+        echo "========================================="
+        echo "🎉 Training pipeline executed successfully!"
+        echo "========================================="
