@@ -1,0 +1,12 @@
+name: Wine_Quality_MLflow_Project
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      n_estimators: {type: int, default: 200}
+      max_depth: {type: int, default: 15}
+      min_samples_split: {type: int, default: 5}
+      min_samples_leaf: {type: int, default: 2}
+      class_weight: {type: string, default: "balanced"}
+    command: "python modelling.py --n_estimators {n_estimators} --max_depth {max_depth} --min_samples_split {min_samples_split} --min_samples_leaf {min_samples_leaf} --class_weight {class_weight}"
